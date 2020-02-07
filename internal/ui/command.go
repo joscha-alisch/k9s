@@ -15,19 +15,24 @@ type Command struct {
 	*tview.TextView
 
 	activated bool
+	minimal   bool
 	icon      rune
 	text      string
 	styles    *config.Styles
 }
 
 // NewCommand returns a new command view.
-func NewCommand(styles *config.Styles) *Command {
-	c := Command{styles: styles, TextView: tview.NewTextView()}
-	c.SetWordWrap(true)
-	c.SetWrap(true)
+func NewCommand(styles *config.Styles, minimal bool) *Command {
+	c := Command{styles: styles, TextView: tview.NewTextView(), minimal: minimal}
+	c.SetWordWrap(false)
+	c.SetWrap(false)
 	c.SetDynamicColors(true)
-	c.SetBorder(true)
-	c.SetBorderPadding(0, 0, 1, 1)
+
+	c.SetBorder(!c.minimal)
+	if !c.minimal {
+		c.SetBorderPadding(0, 0, 1, 1)
+	}
+
 	c.SetBackgroundColor(styles.BgColor())
 	c.SetTextColor(styles.FgColor())
 	styles.AddListener(&c)
@@ -75,7 +80,7 @@ func (c *Command) BufferChanged(s string) {
 // BufferActive indicates the buff activity changed.
 func (c *Command) BufferActive(f bool, k BufferKind) {
 	if c.activated = f; f {
-		c.SetBorder(true)
+		c.SetBorder(!c.minimal)
 		c.SetTextColor(c.styles.FgColor())
 		c.SetBorderColor(colorFor(k))
 		c.icon = iconFor(k)

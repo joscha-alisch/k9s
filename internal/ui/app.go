@@ -20,7 +20,7 @@ type App struct {
 }
 
 // NewApp returns a new app.
-func NewApp(context string) *App {
+func NewApp(context string, headless bool) *App {
 	a := App{
 		Application: tview.NewApplication(),
 		actions:     make(KeyActions),
@@ -32,7 +32,7 @@ func NewApp(context string) *App {
 	a.views = map[string]tview.Primitive{
 		"menu":   NewMenu(a.Styles),
 		"logo":   NewLogo(a.Styles),
-		"cmd":    NewCommand(a.Styles),
+		"cmd":    NewCommand(a.Styles, headless),
 		"flash":  NewFlash(&a, "Initializing..."),
 		"crumbs": NewCrumbs(a.Styles),
 	}
@@ -62,7 +62,14 @@ func (a *App) BufferActive(state bool, _ BufferKind) {
 	}
 
 	if state && flex.ItemAt(1) != a.Cmd() {
-		flex.AddItemAtIndex(1, a.Cmd(), 3, 1, false)
+		var size int
+		if a.Config.K9s.GetHeadless() {
+			size = 1
+		} else {
+			size = 3
+		}
+
+		flex.AddItemAtIndex(1, a.Cmd(), size, 1, false)
 	} else if !state && flex.ItemAt(1) == a.Cmd() {
 		flex.RemoveItemAtIndex(1)
 	}
@@ -198,6 +205,7 @@ func (a *App) activateCmd(evt *tcell.EventKey) *tcell.EventKey {
 	if a.InCmdMode() {
 		return evt
 	}
+
 	a.cmdBuff.SetActive(true)
 	a.cmdBuff.Clear()
 

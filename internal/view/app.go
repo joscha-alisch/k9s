@@ -47,7 +47,7 @@ type App struct {
 // NewApp returns a K9s app instance.
 func NewApp(cfg *config.Config) *App {
 	a := App{
-		App:     ui.NewApp(cfg.K9s.CurrentContext),
+		App:     ui.NewApp(cfg.K9s.CurrentContext, cfg.K9s.GetHeadless()),
 		Content: NewPageStack(),
 	}
 	a.Config = cfg
